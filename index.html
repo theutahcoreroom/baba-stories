@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="爸爸的故事">
+<meta name="theme-color" content="#b5471f">
+<title>爸爸的故事</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#3a2a1e;
+    --ink-soft:#6b5544;
+    --paper:#fbf4e7;
+    --paper-card:#fffaf0;
+    --warm:#b5471f;        /* lacquer red-orange, like a shop sign at dusk */
+    --warm-deep:#8f3414;
+    --gold:#c98a2b;        /* warm lamplight */
+    --line:#e7d8bf;
+    --shadow:rgba(90,55,25,.16);
+  }
+
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  html,body{ margin:0; padding:0; }
+
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, #fdf7ec 0%, var(--paper) 55%, #f3e7cf 100%);
+    color:var(--ink);
+    font-family:"Noto Sans TC", sans-serif;
+    min-height:100vh;
+    min-height:100dvh;
+    line-height:1.85;
+    -webkit-text-size-adjust:100%;
+  }
+
+  .wrap{
+    max-width:560px;
+    margin:0 auto;
+    padding:max(20px, env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom));
+  }
+
+  /* ---------- screens ---------- */
+  .screen{ display:none; }
+  .screen.active{ display:block; animation:fade .35s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+  @media (prefers-reduced-motion: reduce){
+    .screen.active{ animation:none; }
+  }
+
+  /* ---------- home ---------- */
+  .home-head{
+    text-align:center;
+    padding:18px 0 6px;
+  }
+  .home-head .lamp{
+    font-size:46px;
+    line-height:1;
+    display:block;
+    margin-bottom:6px;
+  }
+  .home-head h1{
+    font-family:"Noto Serif TC", serif;
+    font-weight:900;
+    font-size:34px;
+    margin:0;
+    color:var(--warm-deep);
+    letter-spacing:.04em;
+  }
+  .home-head p{
+    margin:8px 0 0;
+    font-size:18px;
+    color:var(--ink-soft);
+  }
+
+  .list{
+    margin-top:26px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .story-card{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    width:100%;
+    text-align:right;
+    border:none;
+    cursor:pointer;
+    background:var(--paper-card);
+    border-radius:20px;
+    padding:20px 20px 20px 18px;
+    box-shadow:0 4px 0 var(--line), 0 10px 22px var(--shadow);
+    transition:transform .12s ease, box-shadow .12s ease;
+    font-family:inherit;
+    color:inherit;
+  }
+  .story-card:active{
+    transform:translateY(3px);
+    box-shadow:0 1px 0 var(--line), 0 5px 12px var(--shadow);
+  }
+  .story-card .emoji{
+    font-size:40px;
+    line-height:1;
+    flex:0 0 auto;
+    width:64px;
+    height:64px;
+    display:grid;
+    place-items:center;
+    background:#fff3df;
+    border-radius:16px;
+    box-shadow:inset 0 0 0 2px var(--line);
+  }
+  .story-card .meta{ flex:1 1 auto; text-align:left; }
+  .story-card .t{
+    font-family:"Noto Serif TC", serif;
+    font-weight:700;
+    font-size:24px;
+    color:var(--ink);
+    line-height:1.4;
+  }
+  .story-card .s{
+    font-size:17px;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  .story-card .go{
+    flex:0 0 auto;
+    font-size:26px;
+    color:var(--warm);
+  }
+
+  /* ---------- player ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 0 14px;
+  }
+  .back-btn{
+    border:none;
+    background:#fff3df;
+    color:var(--warm-deep);
+    font-family:inherit;
+    font-size:19px;
+    font-weight:700;
+    padding:12px 18px;
+    border-radius:14px;
+    cursor:pointer;
+    box-shadow:0 3px 0 var(--line);
+  }
+  .back-btn:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--line); }
+
+  .player-title{
+    font-family:"Noto Serif TC", serif;
+    font-weight:900;
+    font-size:28px;
+    color:var(--warm-deep);
+    margin:4px 0 18px;
+    text-align:center;
+    line-height:1.4;
+  }
+
+  /* big play control */
+  .controls{
+    position:sticky;
+    top:0;
+    z-index:5;
+    background:linear-gradient(180deg, var(--paper) 70%, rgba(251,244,231,0));
+    padding:6px 0 14px;
+    text-align:center;
+  }
+  .play-btn{
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+    background:var(--warm);
+    color:#fff;
+    font-size:26px;
+    font-weight:700;
+    padding:20px 10px;
+    width:100%;
+    border-radius:20px;
+    box-shadow:0 5px 0 var(--warm-deep), 0 12px 22px var(--shadow);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+  }
+  .play-btn:active{ transform:translateY(3px); box-shadow:0 2px 0 var(--warm-deep), 0 6px 12px var(--shadow); }
+  .play-btn .ico{ font-size:30px; line-height:1; }
+
+  .mini-controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:12px;
+  }
+  .mini-controls button{
+    flex:1 1 40%;
+    min-width:130px;
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+    background:#fff3df;
+    color:var(--warm-deep);
+    font-size:18px;
+    font-weight:700;
+    padding:14px 8px;
+    border-radius:14px;
+    box-shadow:0 3px 0 var(--line);
+  }
+  .mini-controls .restart{
+    flex:1 1 100%;
+  }
+  .mini-controls button:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--line); }
+
+  /* story text */
+  .story-body{
+    margin-top:24px;
+    font-size:23px;
+    line-height:2.05;
+    color:var(--ink);
+    letter-spacing:.01em;
+  }
+  .story-body p{ margin:0 0 1.35em; }
+  .recap{
+    background:#fff3df;
+    border-right:6px solid var(--gold);
+    border-radius:12px;
+    padding:14px 18px;
+    color:var(--ink-soft);
+    font-size:21px;
+    margin:0 0 1.35em;
+  }
+  .end-mark{
+    text-align:center;
+    color:var(--warm);
+    font-family:"Noto Serif TC", serif;
+    font-size:22px;
+    margin:1.6em 0;
+  }
+
+  .questions{
+    margin-top:10px;
+    background:var(--paper-card);
+    border-radius:20px;
+    padding:22px 22px 8px;
+    box-shadow:0 4px 0 var(--line), 0 10px 22px var(--shadow);
+  }
+  .questions h2{
+    font-family:"Noto Serif TC", serif;
+    font-size:24px;
+    color:var(--warm-deep);
+    margin:0 0 6px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .questions ol{
+    margin:8px 0 0;
+    padding-right:24px;
+    padding-left:0;
+  }
+  .questions li{
+    font-size:22px;
+    line-height:1.9;
+    margin-bottom:16px;
+  }
+
+  .footnote{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:15px;
+    margin-top:30px;
+    line-height:1.7;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HOME ============ -->
+  <section id="home" class="screen active">
+    <div class="home-head">
+      <span class="lamp">🏮</span>
+      <h1>爸爸的故事</h1>
+      <p>點一個故事，按下播放，<br>一邊聽，一邊看。</p>
+    </div>
+    <div id="storyList" class="list"></div>
+    <p class="footnote">每一個故事大約幾分鐘。<br>聽完，最後有三個小問題，可以一起想一想。</p>
+  </section>
+
+  <!-- ============ PLAYER ============ -->
+  <section id="player" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="goHome()">← 回到故事列表</button>
+    </div>
+
+    <div class="controls">
+      <button id="playBtn" class="play-btn" onclick="togglePlay()">
+        <span class="ico" id="playIco">▶</span>
+        <span id="playLabel">播放故事</span>
+      </button>
+      <div class="mini-controls">
+        <button onclick="seek(-10)">⏪ 倒回 10 秒</button>
+        <button onclick="seek(10)">快轉 10 秒 ⏩</button>
+        <button class="restart" onclick="restart()">↺ 從頭開始</button>
+      </div>
+    </div>
+
+    <h1 id="playerTitle" class="player-title"></h1>
+    <div id="storyText" class="story-body"></div>
+
+    <audio id="audio" preload="metadata"></audio>
+    <p class="footnote">如果沒有聲音，請把手機的響鈴聲音調大一點。</p>
+  </section>
+
+</div>
+
+<script>
+/* ------------------------------------------------------------
+   STORY DATA
+   Each story = title, emoji, a one-line subtitle, the audio
+   filename (must match the MP3 you generate), the reading text
+   (paragraphs; recaps marked), and the 3 questions.
+   To add a story later, add another { } block to this array.
+------------------------------------------------------------ */
+const STORIES = [
+  {
+    id: "story_01_noodle_stall",
+    title: "雨中的麵攤",
+    emoji: "🍜",
+    subtitle: "台南．一碗熱熱的擔仔麵",
+    audio: "story_01_noodle_stall_female.mp3",
+    paragraphs: [
+      "在台南的一條老街上，有一家小小的麵攤，賣的是這附近最有名的擔仔麵。麵攤的老闆叫做陳金水，大家都叫他水伯。水伯今年六十五歲，做麵已經做了四十年。他的手很慢，可是每一碗麵都很用心，湯頭是用大骨熬了一整個晚上的，香味飄滿整條街。",
+      "水伯的麵攤旁邊，最近開了一家很大的連鎖麵店，老闆是一個年輕人，叫做林志強。林志強很會做生意，店裡又新又亮，還有冷氣。他常常站在門口，看著水伯那個舊舊的小攤子，臉上帶著一點看不起的表情。",
+      "有一天，林志強走過來，對水伯說：「水伯啊，你這個攤子這麼舊，生意一定做不下去的。不如你早點收起來，把這個位子讓給我，我多開一家分店。」水伯只是笑一笑，慢慢地說：「謝謝你的好意，可是這個麵攤，是我跟太太一起守了一輩子的地方。我還想再做幾年。」",
+      "林志強聽了，搖搖頭就走了。他心裡想，這個老人家真是不懂變通。",
+      "那天晚上，水伯收攤以後，一個人坐在攤子前面，看著太太以前坐的那張椅子。他的太太兩年前過世了。水伯輕輕地閉上眼睛，做了一個簡單的禱告：「主啊，謝謝你給我這雙手，讓我可以煮麵給人吃。不管生意好不好，我都會好好做下去。」",
+      { recap: "（上次說到，台南的水伯有一個老麵攤，旁邊開了一家大店，年輕老闆林志強看不起水伯，要他把位子讓出來。水伯沒有答應，他想守住跟太太一起經營的麵攤。）" },
+      "過了幾個月，台南下了一場很大的雨。那種雨，一下就是好幾天，街上都淹水了。林志強的大店，因為地勢比較低，水一下子就淹進去了，裡面的桌子、椅子、機器，全部都泡在水裡。林志強站在店門口，看著一片混亂，急得不知道怎麼辦。",
+      "更糟的是，那幾天因為淹水，送貨的車子都進不來，林志強的店裡沒有材料，沒辦法開門做生意。他看著隔壁水伯的麵攤，因為地勢高一點，居然沒有被水淹到。",
+      "水伯看見林志強站在雨裡，臉色很難看，就走過去問他：「年輕人，你還好嗎？」林志強很不好意思，因為他以前對水伯那麼沒有禮貌。他低著頭說：「水伯，我的店全淹了，材料也送不進來，我不知道該怎麼辦。」",
+      "水伯想了一下，說：「這樣吧，我這裡還有一些大骨跟麵條，你如果不嫌棄，就先拿去用。等雨停了，你再還我就好。」林志強很驚訝地抬起頭。他沒想到，這個被他看不起的老人家，竟然在他最困難的時候，第一個伸出手來幫他。",
+      "那天，水伯還教林志強怎麼用簡單的材料，煮出一鍋好喝的湯。兩個人在雨裡，一起守著一個小小的爐子，鍋裡的湯，冒著暖暖的白煙。",
+      { recap: "（上次說到，大雨淹了林志強的店，水伯不但沒有趁機看他笑話，反而把自己的材料分給他，還教他怎麼煮湯。）" },
+      "雨停了以後，林志強的心，好像也有什麼東西不一樣了。他把借來的材料，加倍還給水伯，還常常跑來麵攤，跟水伯學怎麼熬湯、怎麼用心對待每一個客人。",
+      "水伯告訴他：「做吃的，最重要的不是店面漂不漂亮，是你有沒有把客人當作自己的家人。你用什麼樣的心煮，客人是吃得出來的。」林志強把這句話記在心裡。",
+      "慢慢地，林志強的大店重新開張了，可是他變了一個人。他開始記得老客人的名字，記得誰不要香菜，記得誰喜歡多一點湯。他的店，生意越來越好，可是他從來沒有忘記，是水伯在大雨裡救了他。",
+      "有一天，林志強對水伯說：「水伯，我以前真的很對不起你。你願意原諒我嗎？」水伯笑著拍拍他的肩膀：「年輕人，人都會犯錯。你願意改，就是最好的事了。」",
+      "後來，林志強在自己店裡最顯眼的地方，掛了一塊木牌，上面寫著八個字：「用心做事，老實做人。」他說，這是台南一個賣麵的老人家，教他一輩子最重要的事。",
+      "而水伯的小麵攤，還是每天慢慢地、用心地，煮著那一碗熱熱的擔仔麵。香味，還是飄滿整條老街。"
+    ],
+    questions: [
+      "水伯的麵攤，在大雨的時候為什麼沒有被淹到？",
+      "林志強一開始是怎麼對待水伯的？後來他為什麼改變了？",
+      "林志強最後在店裡掛的木牌上，寫了哪八個字？"
+    ]
+  },
+  {
+    id: "story_02_hualien_farm",
+    title: "山邊的菜園",
+    emoji: "🥬",
+    subtitle: "花蓮．一片乾淨的菜園",
+    audio: "story_02_hualien_farm_female.mp3",
+    paragraphs: [
+      "在花蓮的山邊，有一片小小的菜園。種菜的是一個叫阿菊的婦人，還有她的兒子小偉。阿菊的先生很早就過世了，她一個人，靠著這片菜園，把小偉養大。",
+      "阿菊種的菜，特別好吃。她從來不用太多藥，每天天還沒亮就起床，到園子裡，一棵一棵地照顧。她常常跟小偉說：「我們種的菜，是要給人吃進肚子裡的。做人做事，都要對得起自己的良心。」",
+      "山下的菜市場裡，有一個大盤商，姓黃。黃老闆收菜，最喜歡挑毛病，故意把價錢壓得很低。他知道阿菊一個人辛苦，沒有別的地方可以賣，就常常欺負她。「你這個菜，賣相不好啦，」黃老闆每次都這樣說，「我算你便宜一點收，已經是幫你了。」",
+      "阿菊心裡很難過，可是她沒有別的辦法。她只能把菜便宜賣給黃老闆，自己賺的，只夠勉強過日子。小偉看了很心疼，可是他還在念書，幫不上什麼忙。",
+      "有一天晚上，阿菊累得腰都直不起來，她坐在門口，看著遠遠的山。她在心裡默默地想：只要能讓小偉好好長大，再辛苦，我都願意。",
+      { recap: "（上次說到，花蓮山邊的阿菊一個人種菜養兒子，菜種得很好，可是山下的黃老闆故意壓低價錢，欺負她老實。）" },
+      "小偉漸漸長大了，去外地念了書，學的是怎麼用網路做生意。放假回家的時候，他看見媽媽還是每天被黃老闆欺負，心裡下了一個決定。",
+      "「媽，」小偉說，「我們的菜這麼好，為什麼一定要賤賣給黃老闆？我來幫你想辦法。」小偉用他學到的東西，幫媽媽把菜園的故事、媽媽種菜的樣子，一張一張照片，放到網路上。他寫著：「這是我媽媽，在花蓮的山邊，用最乾淨的方式，種出來的菜。」",
+      "沒想到，很多城市裡的人看到了，都很感動。他們說，現在很難找到這樣用心種的菜了。訂單一張一張地來，阿菊的菜，再也不用便宜賣給黃老闆，而是直接、用好的價錢，賣到全台灣各地的家庭裡。",
+      "阿菊忙不過來，附近幾個一樣辛苦的農民，也來幫忙。大家一起種、一起包、一起寄。山邊的菜園，變得越來越熱鬧。",
+      "那個黃老闆呢？因為他平常對農民太刻薄，價錢壓得太低，農民們一個一個都不願意再把菜賣給他了。他的生意，慢慢地做不下去了。",
+      { recap: "（上次說到，小偉用網路幫媽媽直接把菜賣給各地的家庭，阿菊不用再被黃老闆欺負，而黃老闆因為平常太刻薄，沒有農民願意供菜給他了。）" },
+      "有一天，黃老闆居然親自上山，來到阿菊的菜園。他的態度，跟以前完全不一樣了。他低著頭說：「阿菊姐，我以前對你很不好，價錢都故意壓低。是我不對。我現在……生意很困難，想跟你進一點菜。」",
+      "小偉在旁邊聽了，很生氣，想替媽媽說幾句話。可是阿菊拉住了他。她看著黃老闆，平靜地說：「黃老闆，過去的事，我不放在心上了。你要進菜，可以。可是有一個條件：以後你跟別的農民收菜，也要用公道的價錢。大家都是辛苦人，要互相體諒。」",
+      "黃老闆愣住了。他沒想到，這個被他欺負了這麼多年的婦人，竟然願意原諒他，還願意給他機會。他紅著眼睛，點了點頭：「我答應你。以後，我一定老老實實做生意。」",
+      "從那以後，黃老闆真的改了。他開始用公道的價錢收菜，農民們也慢慢願意再相信他。",
+      "阿菊還是每天天還沒亮就起床，到園子裡照顧她的菜。只是現在，她的身邊，多了兒子，多了一起打拚的鄰居。山邊的早晨，風吹過菜葉，沙沙地響，好像在說：對得起良心的人，老天爺，是不會虧待他的。"
+    ],
+    questions: [
+      "阿菊種的菜，為什麼大家都說特別好？",
+      "小偉用什麼方法，幫媽媽把菜賣出去？",
+      "最後阿菊原諒黃老闆的時候，她提出了什麼條件？"
+    ]
+  },
+  {
+    id: "story_03_kaohsiung_bakery",
+    title: "港邊的麵包店",
+    emoji: "🍞",
+    subtitle: "高雄．港口邊的麵包香",
+    audio: "story_03_kaohsiung_bakery_female.mp3",
+    paragraphs: [
+      "在高雄的港口邊，有一家小小的麵包店，叫做「恩典麵包」。老闆是一對夫妻，先生叫做志明，太太叫做美玲。他們兩個都是基督徒，每個禮拜天，都會去附近的教會做禮拜。",
+      "志明做的麵包，用料很實在，價錢又公道，附近的工人、漁夫，都喜歡來買。每天傍晚，如果有沒賣完的麵包，志明不會丟掉，他會打包好，送去給港口邊那些沒有地方住、生活很辛苦的人。美玲常常說：「我們賺的，本來就有一部分，是要分給比我們更需要的人。」",
+      "可是，隔壁新開了一家很大的麵包店，老闆叫做阿坤。阿坤為了搶生意，到處跟人家說志明的壞話。他說：「那家恩典麵包，東西舊了還在賣，你們不要去買。」這些話傳開來，志明的客人，真的少了很多。",
+      "志明心裡很委屈。明明自己從來沒有賣過不新鮮的東西，為什麼要被這樣說？那天晚上，他和美玲一起禱告。美玲輕輕地說：「我們把這件事交給主。我們只要繼續做對的事，問心無愧就好。」志明點點頭，心裡安定了一些。",
+      { recap: "（上次說到，高雄港邊的志明和美玲開了一家「恩典麵包」，常常把賣不完的麵包送給生活辛苦的人。可是隔壁的阿坤為了搶生意，到處說他們的壞話，害他們的客人變少了。）" },
+      "過了一陣子，海邊起了很大的風浪。有一天半夜，阿坤的麵包店因為電線老舊，竟然起火了。火很大，阿坤一個人住在店裡，被困在二樓，下不來，急得大叫。",
+      "那天晚上，剛好志明還沒睡，他聽見外面有人喊救命，馬上衝了出去。他看見是阿坤的店在燒，沒有半點猶豫，立刻打電話叫消防隊，然後拿了梯子，冒著危險，把困在二樓的阿坤救了下來。",
+      "阿坤被救下來的時候，全身發抖。他看著志明，說不出話來。他想起自己這段時間，到處說志明的壞話，可是志明卻在他最危險的時候，第一個來救他。阿坤的眼淚，忍不住流了下來。",
+      "火滅了以後，阿坤的店燒掉了大半，沒有地方可以做生意。志明對他說：「你先別擔心。在你重新整理好之前，白天就來我這裡，我們一起做麵包，一起賣。賺的錢，我們分。」阿坤不敢相信自己的耳朵。",
+      { recap: "（上次說到，阿坤的店失火，志明不計較他以前說的壞話，冒著危險救了他，還邀請他一起做麵包。）" },
+      "接下來的日子，阿坤每天到恩典麵包，跟著志明一起工作。他慢慢明白了，為什麼志明的麵包，大家都這麼喜歡——因為志明做每一個麵包，都是用心的，從來不偷工減料。",
+      "有一天，阿坤忍不住問：「志明，我以前那樣對你，你為什麼還願意救我、幫我？」志明笑了笑，說：「我信的主教我，要愛人，也要原諒人。你有困難，我幫你，這是應該的。至於以前的事，我早就放下了。」",
+      "阿坤聽了，心裡很慚愧，也很感動。他決定，以後也要像志明一樣，老老實實做人，做生意。等他的店重新開好以後，他也學志明，把賣不完的麵包，送給港邊需要的人。",
+      "港口邊的人都說，現在這兩家麵包店，不是對手，是好朋友了。每天傍晚，兩家店的香味，飄在一起，分不出是哪一家的。",
+      "而「恩典麵包」的門口，一直掛著一句話：「施比受更為有福。」志明說，這是他一輩子，最相信的一句話。"
+    ],
+    questions: [
+      "志明賣不完的麵包，都拿去做什麼？",
+      "阿坤的店失火的時候，是誰救了他？",
+      "志明說，他信的主教他要做什麼兩件事？"
+    ]
+  }
+];
+
+/* ------------------------------------------------------------
+   App logic
+------------------------------------------------------------ */
+const audio = document.getElementById('audio');
+let current = null;
+
+function buildHome(){
+  const list = document.getElementById('storyList');
+  list.innerHTML = '';
+  STORIES.forEach((st, i) => {
+    const card = document.createElement('button');
+    card.className = 'story-card';
+    card.onclick = () => openStory(i);
+    card.innerHTML =
+      '<span class="emoji">'+st.emoji+'</span>' +
+      '<span class="meta"><span class="t">'+st.title+'</span>' +
+      '<span class="s">'+st.subtitle+'</span></span>' +
+      '<span class="go">›</span>';
+    list.appendChild(card);
+  });
+}
+
+function openStory(i){
+  current = STORIES[i];
+
+  document.getElementById('playerTitle').textContent = current.title;
+
+  // build reading text
+  const box = document.getElementById('storyText');
+  box.innerHTML = '';
+  current.paragraphs.forEach(p => {
+    if (typeof p === 'object' && p.recap){
+      const d = document.createElement('p');
+      d.className = 'recap';
+      d.textContent = p.recap;
+      box.appendChild(d);
+    } else {
+      const d = document.createElement('p');
+      d.textContent = p;
+      box.appendChild(d);
+    }
+  });
+
+  // end mark
+  const end = document.createElement('div');
+  end.className = 'end-mark';
+  end.textContent = '—— 故事結束 ——';
+  box.appendChild(end);
+
+  // questions on screen
+  const q = document.createElement('div');
+  q.className = 'questions';
+  let qhtml = '<h2>🌼 聽完故事，一起想一想</h2><ol>';
+  current.questions.forEach(item => { qhtml += '<li>'+item+'</li>'; });
+  qhtml += '</ol>';
+  q.innerHTML = qhtml;
+  box.appendChild(q);
+
+  // audio
+  audio.src = current.audio;
+  audio.load();
+  resetPlayUI();
+
+  showScreen('player');
+  window.scrollTo(0,0);
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome(){
+  audio.pause();
+  resetPlayUI();
+  showScreen('home');
+  window.scrollTo(0,0);
+}
+
+function togglePlay(){
+  if (audio.paused){
+    audio.play().catch(()=>{});
+  } else {
+    audio.pause();
+  }
+}
+
+function seek(sec){
+  if (!isNaN(audio.duration)){
+    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + sec));
+  }
+}
+
+function restart(){
+  audio.currentTime = 0;
+  audio.play().catch(()=>{});
+}
+
+function resetPlayUI(){
+  document.getElementById('playIco').textContent = '▶';
+  document.getElementById('playLabel').textContent = '播放故事';
+}
+
+audio.addEventListener('play', () => {
+  document.getElementById('playIco').textContent = '⏸';
+  document.getElementById('playLabel').textContent = '暫停';
+});
+audio.addEventListener('pause', () => {
+  document.getElementById('playIco').textContent = '▶';
+  document.getElementById('playLabel').textContent = '繼續播放';
+});
+audio.addEventListener('ended', () => {
+  document.getElementById('playIco').textContent = '▶';
+  document.getElementById('playLabel').textContent = '再聽一次';
+  audio.currentTime = 0;
+});
+
+buildHome();
+</script>
+</body>
+</html>
